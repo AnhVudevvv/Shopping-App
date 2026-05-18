@@ -2,6 +2,7 @@ import {
   useCallback,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -21,16 +22,31 @@ const getInitialTheme = (): Theme => {
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const shouldPersistTheme = useRef(true);
   const isDark = theme === "dark";
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    localStorage.setItem("theme", theme);
+
+    if (shouldPersistTheme.current) {
+      localStorage.setItem("theme", theme);
+      return;
+    }
+
+    localStorage.removeItem("theme");
+    shouldPersistTheme.current = true;
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
+    shouldPersistTheme.current = true;
     setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+  }, []);
+
+  const clearThemePreference = useCallback(() => {
+    shouldPersistTheme.current = false;
+    localStorage.removeItem("theme");
+    setTheme("light");
   }, []);
 
   const value = useMemo(
@@ -38,8 +54,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       theme,
       isDark,
       toggleTheme,
+      clearThemePreference,
     }),
-    [isDark, theme, toggleTheme]
+    [clearThemePreference, isDark, theme, toggleTheme]
   );
 
   return (

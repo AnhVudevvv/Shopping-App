@@ -6,7 +6,12 @@ import { useTheme } from "../../hooks/useTheme";
 const Header = () => {
   const { user, logout } = useUser();
   const { totalQuantity } = useCart();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme, clearThemePreference } = useTheme();
+
+  const handleLogout = () => {
+    clearThemePreference();
+    logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur">
@@ -108,7 +113,7 @@ const Header = () => {
             )}
           <NavLink
             to="/login"
-            onClick={user ? logout : undefined}
+            onClick={user ? handleLogout : undefined}
             className={({ isActive }) =>
               [
                 "inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold no-underline transition",

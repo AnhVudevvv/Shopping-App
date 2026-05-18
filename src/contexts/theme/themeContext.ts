@@ -6,6 +6,7 @@ export interface ThemeContextType {
   theme: Theme;
   isDark: boolean;
   toggleTheme: () => void;
+  clearThemePreference: () => void;
 }
 
 export const ThemeContext = createContext<ThemeContextType | null>(null);
