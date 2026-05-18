@@ -1,0 +1,1 @@
+# React exercise about how to use React hooks and apply what learn to optimize performance
