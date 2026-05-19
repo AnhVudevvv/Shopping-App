@@ -33,18 +33,31 @@ const ProductCell = ({
 
 const Home = () => {
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const { wrapperRef, columnCount } = useResponsiveColumns();
   const products = useMemo(() => generateProducts(1000), []);
   const debouncedSearch = useDebounce(search, 500);
   const { addProduct } = useCart();
   const { user } = useUser();
 
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(products.map((product) => product.category)))],
+    [products]
+  );
+
   const filteredProducts = useMemo(() => {
-    if (!debouncedSearch) return products;
-    return products.filter((product) =>
-      product.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
-  }, [debouncedSearch, products]);
+    const normalizedSearch = debouncedSearch.trim().toLowerCase();
+
+    return products.filter((product) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        product.name.toLowerCase().includes(normalizedSearch);
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [debouncedSearch, products, selectedCategory]);
 
   const handleAddToCart = useCallback((product: Product) => {
 
@@ -71,19 +84,31 @@ const Home = () => {
   return (
     <div className="max-w-7xl mx-auto p-6 bg-[var(--bg)]">
       <div className="mb-6 flex justify-center">
-        <SearchBox value={search} onChange={setSearch} />
+        <SearchBox
+          value={search}
+          onChange={setSearch}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
       </div>
 
       <div ref={wrapperRef}>
-        <Grid<ProductCellData>
-          cellComponent={ProductCell}
-          cellProps={rowProps}
-          columnCount={columnCount}
-          columnWidth={`${100 / columnCount}%`}
-          rowCount={rowCount}
-          rowHeight={sizeList[1]}
-          style={{ height: sizeList[0], width: "100%" }}
-        />
+        {filteredProducts.length > 0 ? (
+          <Grid<ProductCellData>
+            cellComponent={ProductCell}
+            cellProps={rowProps}
+            columnCount={columnCount}
+            columnWidth={`${100 / columnCount}%`}
+            rowCount={rowCount}
+            rowHeight={sizeList[1]}
+            style={{ height: sizeList[0], width: "100%" }}
+          />
+        ) : (
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center text-[var(--text)]">
+            No products match your filters.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -38,6 +38,10 @@ const ProductCard = ({
           h-[220px]
           object-cover
         "
+        onError={(e) => {
+          e.currentTarget.src =
+            "https://placehold.co/300x300?text=No+Image";
+        }}
       />
 
       <div className="p-4 text-start flex flex-col gap-1  flex-1">
@@ -49,7 +53,7 @@ const ProductCard = ({
             line-clamp-1
           "
         >
-           {product.name}
+          {product.name}
         </h3>
 
         <p
@@ -58,7 +62,7 @@ const ProductCard = ({
             text-[var(--text)]
           "
         >
-         Category:  {product.category}
+          Category:  {product.category}
         </p>
 
         <p
