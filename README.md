@@ -1,7 +1,10 @@
 # Product - React Hooks and Context API Exercise
 
 Du an demo shopping product duoc xay dung bang React, TypeScript va Vite. Muc tieu chinh la thuc hanh React Hooks, Context API, reducer, routing, localStorage va toi uu render voi `useMemo`, `useCallback`, debounce va virtualized list.
-# Link demo: https://drive.google.com/file/d/16CgZV5aXzD02Rc4UUX4_5rux6oUji2qY/view?usp=sharing
+# Link demo: https://drive.google.com/file/d/1waBbYujgBOxrYL7bobp4wBkvbjny_M8y/view?usp=sharing
+
+# Link deploy: https://shoppingappppp.netlify.app/
+
 ## Tech Stack
 
 - React 19
