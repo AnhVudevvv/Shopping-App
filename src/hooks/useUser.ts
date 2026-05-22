@@ -1,14 +1,29 @@
-import { useContext } from "react";
-import { UserContext } from "../contexts/user/userContext";
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "../store/hook";
+import {
+    logout as logoutAction,
+    updateUser as updateUserAction,
+} from "../store/user/userSlice";
+import type { IUser } from "../types/user.type";
 
 export const useUser = () => {
-    const context = useContext(UserContext);
+    const dispatch = useAppDispatch();
+    const user = useAppSelector((state) => state.user.user);
 
-    if (!context) {
-        throw new Error(
-            "useUser must be used within a UserProvider"
-        );
-    }
+    const updateUser = useCallback(
+        (userData: IUser | null) => {
+            dispatch(updateUserAction(userData));
+        },
+        [dispatch]
+    );
 
-    return context;
+    const logout = useCallback(() => {
+        dispatch(logoutAction());
+    }, [dispatch]);
+
+    return {
+        user,
+        updateUser,
+        logout,
+    };
 };
