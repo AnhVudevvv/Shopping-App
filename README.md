@@ -1,23 +1,36 @@
-# Product - React Hooks and Context API Exercise
+# Product - Bài Tập React Hooks, Context API Và Redux Toolkit
 
-Du an demo shopping product duoc xay dung bang React, TypeScript va Vite. Muc tieu chinh la thuc hanh React Hooks, Context API, reducer, routing, localStorage va toi uu render voi `useMemo`, `useCallback`, debounce va virtualized list.
-# Link demo: https://drive.google.com/file/d/1waBbYujgBOxrYL7bobp4wBkvbjny_M8y/view?usp=sharing
+Dự án demo shopping product được xây dựng bằng React, TypeScript và Vite. Mục tiêu chính là thực hành React Hooks, Redux Toolkit, Context API, routing, localStorage và tối ưu render với `useMemo`, `useCallback`, debounce và virtualized list.
 
-# Link deploy: https://shoppingappppp.netlify.app/
+## Link Demo
 
-## Tech Stack
+https://drive.google.com/file/d/1waBbYujgBOxrYL7bobp4wBkvbjny_M8y/view?usp=sharing
+
+## Link Deploy
+
+https://shoppingappppp.netlify.app/
+
+## Tài Khoản Demo
+
+```txt
+tranvu051004@gmail.com | 123456
+vu174657@gmail.com     | 123456
+```
+
+## Công Nghệ Sử Dụng
 
 - React 19
 - TypeScript
 - Vite
+- Redux Toolkit
+- React Redux
 - React Router DOM
 - React Window
 - Tailwind CSS
-- Context API
-- useReducer
+- Context API cho theme
 - localStorage
 
-## Project Structure
+## Cấu Trúc Dự Án
 
 ```txt
 src/
@@ -35,14 +48,14 @@ src/
     grid.ts
   contexts/
     cart/
-      cartContext.ts
-      cartProvider.tsx
+      cartContext.ts        # legacy, không còn dùng trong app hiện tại
+      cartProvider.tsx      # legacy, không còn dùng trong app hiện tại
     theme/
       themeContext.ts
       themeProvider.tsx
     user/
-      userContext.ts
-      userProvider.tsx
+      userContext.ts        # legacy, không còn dùng trong app hiện tại
+      userProvider.tsx      # legacy, không còn dùng trong app hiện tại
   hooks/
     useCart.ts
     useDebounce.ts
@@ -60,9 +73,16 @@ src/
       index.tsx
   reducers/
     cart/
-      index.ts
+      index.ts              # legacy reducer, không còn dùng trong app hiện tại
   router/
     index.tsx
+  store/
+    index.ts
+    hook.ts
+    cart/
+      cartSlice.ts
+    user/
+      userSlice.ts
   types/
     cart.type.ts
     product.type.ts
@@ -72,62 +92,150 @@ src/
     generateProducts.ts
 ```
 
-## Main Features
+## Tính Năng Chính
 
-- Hien thi danh sach 1000 san pham fake.
-- Tim kiem san pham theo ten.
-- Filter san pham theo category.
-- Virtualized grid de render danh sach lon muot hon.
-- Responsive grid tu 1 den 4 columns tuy kich thuoc man hinh.
-- Dang nhap bang user co san trong `types/user.type.ts`.
-- Them, xoa, tang, giam so luong san pham trong cart.
-- Cart rieng theo tung user.
-- Luu user, cart va theme vao `localStorage`.
-- Toggle light/dark theme.
+- Hiển thị danh sách 1000 sản phẩm fake.
+- Tìm kiếm sản phẩm theo tên.
+- Lọc sản phẩm theo category.
+- Dùng virtualized grid để render danh sách lớn mượt hơn.
+- Responsive grid từ 1 đến 4 columns tùy kích thước màn hình.
+- Đăng nhập bằng user có sẵn trong `src/types/user.type.ts`.
+- Quản lý user state bằng Redux Toolkit.
+- Quản lý cart state bằng Redux Toolkit.
+- Thêm, xóa, tăng, giảm số lượng sản phẩm trong cart.
+- Cart riêng theo từng user.
+- Lưu user, cart và theme vào `localStorage`.
+- Toggle light/dark theme bằng Context API.
 
-## App Entry Flow
+## Luồng Khởi Tạo App
 
-`main.tsx` render `App` vao DOM:
+`main.tsx` render `App` vào DOM và bọc app bằng Redux Provider:
 
 ```txt
 main.tsx
-  -> App.tsx
-    -> ThemeProvider
-      -> UserProvider
-        -> CartProvider
-          -> RouterProvider
+  -> Provider store={store}
+    -> App.tsx
+      -> ThemeProvider
+        -> RouterProvider
 ```
 
-Thu tu provider nay quan trong vi `CartProvider` can doc user hien tai thong qua `useUser()` de gan cart item theo `userId`.
+`Provider` của `react-redux` giúp các component và custom hook có thể đọc/dispatch Redux state.
 
-## Routing Flow
+`ThemeProvider` vẫn được giữ lại vì theme là state đơn giản và tách biệt với user/cart.
 
-Router duoc khai bao trong `src/router/index.tsx`.
+## Luồng Redux Store
+
+Redux store được khai báo trong `src/store/index.ts`.
 
 ```txt
-/       -> Layout -> Home
-/cart   -> Layout -> Cart
-/login  -> Login
+store
+  -> user: userReducer
+  -> cart: cartReducer
 ```
 
-`Layout` render `Header` va `Outlet`. Cac page nam trong layout se dung chung header.
+State shape chính:
 
-## Data Flow
+```txt
+state.user.user
+state.cart.cartItems
+```
 
-### Product List
+`src/store/hook.ts` tạo typed hooks:
+
+- `useAppDispatch`
+- `useAppSelector`
+
+Hai hook này giúp TypeScript hiểu đúng type của Redux state và dispatch.
+
+## Luồng User
+
+User state được quản lý trong `src/store/user/userSlice.ts`.
+
+```txt
+Login
+  -> validate form
+  -> tìm user trong userList
+  -> useUser().updateUser(user)
+  -> dispatch updateUser
+  -> state.user.user được cập nhật
+  -> store.subscribe lưu user vào localStorage
+  -> navigate("/")
+```
+
+Actions trong `userSlice`:
+
+- `updateUser`
+- `logout`
+
+`useUser` là custom hook nằm ở `src/hooks/useUser.ts`. Hook này đã chuyển sang dùng Redux, nhưng vẫn giữ API cũ:
+
+```txt
+useUser()
+  -> user
+  -> updateUser
+  -> logout
+```
+
+Nhờ vậy các component như `Header`, `Login`, `Home`, `Cart` không cần đọc Redux trực tiếp.
+
+## Luồng Cart
+
+Cart state được quản lý trong `src/store/cart/cartSlice.ts`.
+
+```txt
+ProductCard
+  -> onAddToCart(product)
+  -> Home.handleAddToCart
+  -> useCart().addProduct(product)
+  -> dispatch addProduct({ product, userId })
+  -> cartSlice update state.cart.cartItems
+  -> store.subscribe lưu cart vào localStorage
+```
+
+Actions trong `cartSlice`:
+
+- `addProduct`
+- `removeProduct`
+- `increaseQuantity`
+- `decreaseQuantity`
+- `clearCart`
+
+Mỗi cart item có thêm:
+
+- `quantity`
+- `userId`
+
+Nhờ `userId`, mỗi user sẽ thấy giỏ hàng riêng của mình.
+
+`useCart` là custom hook nằm ở `src/hooks/useCart.ts`. Hook này đọc Redux state và tính các giá trị phụ trợ:
+
+- `cartItems`
+- `currentUserCartItems`
+- `totalQuantity`
+- `totalPrice`
+
+Hook này cũng expose các cart actions cho component:
+
+- `addProduct`
+- `removeProduct`
+- `increaseQuantity`
+- `decreaseQuantity`
+- `clearCart`
+
+## Luồng Danh Sách Sản Phẩm
 
 ```txt
 Home
   -> generateProducts(1000)
-  -> categories duoc tao tu product.category
-  -> SearchBox cap nhat search va selectedCategory
+  -> categories được tạo từ product.category
+  -> SearchBox cập nhật search và selectedCategory
   -> useDebounce(search)
   -> filteredProducts
   -> React Window Grid
   -> ProductCard
 ```
 
-Product khong lay tu API, ma duoc tao o `src/utils/generateProducts.ts`. Moi product co:
+Product không lấy từ API, mà được tạo ở `src/utils/generateProducts.ts`. Mỗi product có:
 
 - `id`
 - `name`
@@ -136,9 +244,9 @@ Product khong lay tu API, ma duoc tao o `src/utils/generateProducts.ts`. Moi pro
 - `category`
 - `description`
 
-### Search and Category Filter
+## Tìm Kiếm Và Lọc Category
 
-`SearchBox` nhan cac props:
+`SearchBox` nhận các props:
 
 - `value`
 - `onChange`
@@ -146,7 +254,7 @@ Product khong lay tu API, ma duoc tao o `src/utils/generateProducts.ts`. Moi pro
 - `selectedCategory`
 - `onCategoryChange`
 
-Logic filter nam trong `Home`:
+Logic filter nằm trong `Home`:
 
 ```txt
 products
@@ -155,97 +263,70 @@ products
   -> filteredProducts
 ```
 
-Neu category la `All`, app hien tat ca san pham. Neu chon category cu the, app chi hien san pham co `product.category` trung voi category do.
+Nếu category là `All`, app hiển thị tất cả sản phẩm. Nếu chọn category cụ thể, app chỉ hiển thị sản phẩm có `product.category` trùng với category đó.
 
-### Cart Flow
+## Luồng Theme
 
-```txt
-ProductCard
-  -> onAddToCart(product)
-  -> Home.handleAddToCart
-  -> useCart().addProduct(product)
-  -> CartProvider dispatch ADD_PRODUCT
-  -> cartReducer update state
-  -> localStorage luu cart
-```
-
-Cart state duoc quan ly bang `useReducer`. Reducer nam trong `src/reducers/cart/index.ts`.
-
-Cart actions:
-
-- `ADD_PRODUCT`
-- `REMOVE_PRODUCT`
-- `INCREASE_QUANTITY`
-- `DECREASE_QUANTITY`
-- `CLEAR_CART`
-
-Moi cart item co them:
-
-- `quantity`
-- `userId`
-
-Nho `userId`, moi user se thay gio hang rieng cua minh.
-
-### User Flow
-
-```txt
-Login
-  -> validate form
-  -> tim user trong userList
-  -> updateUser(user)
-  -> luu user vao localStorage
-  -> navigate("/")
-```
-
-`UserProvider` doc user ban dau tu `localStorage`. Neu logout, user se bi xoa khoi state va `localStorage`.
-
-### Theme Flow
+Theme vẫn được quản lý bằng Context API trong `src/contexts/theme/themeProvider.tsx`.
 
 ```txt
 ThemeProvider
-  -> doc theme tu localStorage
-  -> neu chua co thi dung prefers-color-scheme
-  -> gan data-theme len document.documentElement
-  -> CSS variables doi mau theo theme
+  -> đọc theme từ localStorage
+  -> nếu chưa có thì dùng prefers-color-scheme
+  -> gắn data-theme lên document.documentElement
+  -> CSS variables đổi màu theo theme
 ```
 
-Theme duoc quan ly trong `ThemeProvider`, con mau sac duoc dinh nghia bang CSS variables trong `src/index.css`.
+Màu sắc được định nghĩa bằng CSS variables trong `src/index.css`.
 
-## Important Hooks
+## Các Hook Quan Trọng
 
-- `useUser`: doc `UserContext`, dung cho login/logout va lay user hien tai.
-- `useCart`: doc `CartContext`, dung cho cart actions va cart totals.
-- `useTheme`: doc `ThemeContext`, dung cho toggle theme.
-- `useDebounce`: tri hoan gia tri search de tranh filter lai qua nhieu khi nguoi dung dang go.
-- `useResponsiveColumns`: dung `ResizeObserver` de tinh so column cua product grid theo width.
+- `useUser`: đọc Redux user state, dùng cho login/logout và lấy user hiện tại.
+- `useCart`: đọc Redux cart state, dispatch cart actions và tính cart totals.
+- `useTheme`: đọc `ThemeContext`, dùng cho toggle theme.
+- `useDebounce`: trì hoãn giá trị search để tránh filter lại quá nhiều khi người dùng đang gõ.
+- `useResponsiveColumns`: dùng `ResizeObserver` để tính số column của product grid theo width.
 
-## Performance Notes
+## Ghi Chú Hiệu Năng
 
-- `useMemo` duoc dung de:
-  - tao product list mot lan
-  - tao category list
-  - tinh filtered products
-  - tinh cart totals
-  - memo context value
-- `useCallback` duoc dung cho cac handler nhu add/remove cart, login related actions va add to cart.
-- `react-window` chi render cac product dang nam trong viewport, giup danh sach 1000 san pham van nhe.
-- `useDebounce` giam so lan filter khi search input thay doi lien tuc.
+- `useMemo` được dùng để:
+  - tạo product list một lần
+  - tạo category list
+  - tính filtered products
+  - tính cart items của user hiện tại
+  - tính cart totals
+- `useCallback` được dùng cho các handler như add/remove cart, login related actions và add to cart.
+- `react-window` chỉ render các product đang nằm trong viewport, giúp danh sách 1000 sản phẩm vẫn nhẹ.
+- `useDebounce` giảm số lần filter khi search input thay đổi liên tục.
+- Redux Toolkit giúp gom logic update user/cart vào slice, dễ debug và mở rộng hơn khi app lớn lên.
 
 ## Local Storage Keys
 
-- `user`: user dang dang nhap.
-- `cart`: toan bo cart state.
-- `theme`: theme hien tai, gom `light` hoac `dark`.
+- `user`: user đang đăng nhập.
+- `cart`: toàn bộ cart state.
+- `theme`: theme hiện tại, gồm `light` hoặc `dark`.
 
-## Run Project
+## Các File Context Legacy
 
-Install dependencies:
+Project hiện vẫn giữ lại các file Context/reducer cũ để đối chiếu với version trước:
+
+- `src/contexts/user/userContext.ts`
+- `src/contexts/user/userProvider.tsx`
+- `src/contexts/cart/cartContext.ts`
+- `src/contexts/cart/cartProvider.tsx`
+- `src/reducers/cart/index.ts`
+
+Trong app hiện tại, `user` và `cart` không còn dùng các file này nữa. Logic mới nằm trong `src/store`.
+
+## Chạy Project
+
+Cài dependencies:
 
 ```bash
 npm install
 ```
 
-Run dev server:
+Chạy dev server:
 
 ```bash
 npm run dev
@@ -257,7 +338,7 @@ Build production:
 npm run build
 ```
 
-Run lint:
+Chạy lint:
 
 ```bash
 npm run lint
